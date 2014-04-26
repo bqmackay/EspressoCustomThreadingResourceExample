@@ -17,18 +17,21 @@ public class DownloadHelper {
 
     private final RepsCallbackInterface repsCallbackInterface;
 
-    public DownloadHelper(RepsCallbackInterface repsCallbackInterface) {
+    private Runnable webCallRunnable;
+
+    public DownloadHelper(final RepsCallbackInterface repsCallbackInterface) {
         this.repsCallbackInterface = repsCallbackInterface;
+        webCallRunnable = createWebCallRunnable();
     }
 
-    public void getReps() {
-        final Runnable runnable = new Runnable() {
+    private Runnable createWebCallRunnable() {
+        return new Runnable() {
             @Override
             public void run() {
-
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpResponse response = null;
                 try {
+
                     response = httpclient.execute(new HttpGet("http://whoismyrepresentative.com/getall_mems.php?zip=84020"));
                     StatusLine statusLine = response.getStatusLine();
                     if(statusLine.getStatusCode() == HttpStatus.SC_OK){
@@ -47,13 +50,22 @@ public class DownloadHelper {
                 }
             }
         };
+    }
 
-        new Thread(runnable).start();
-
+    public void getReps() {
+        new Thread(webCallRunnable).start();
     }
 
     public void getRepsWithAsyncTask() {
         RepsAsyncTask asyncTask = new RepsAsyncTask(repsCallbackInterface);
         asyncTask.execute("");
+    }
+
+    public Runnable getWebCallRunnable() {
+        return webCallRunnable;
+    }
+
+    public void setWebCallRunnable(Runnable webCallRunnable) {
+        this.webCallRunnable = webCallRunnable;
     }
 }

@@ -1,17 +1,19 @@
 package com.example.myapplication2.app;
 
-import android.test.ActivityInstrumentationTestCase2;
-
 import com.google.android.apps.common.testing.ui.espresso.contrib.CountingIdlingResource;
 
-import static com.google.android.apps.common.testing.ui.espresso.Espresso.*;
-import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.*;
+import android.test.ActivityInstrumentationTestCase2;
+
+import static com.google.android.apps.common.testing.ui.espresso.Espresso.onView;
+import static com.google.android.apps.common.testing.ui.espresso.Espresso.registerIdlingResources;
+import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.click;
 import static com.google.android.apps.common.testing.ui.espresso.assertion.ViewAssertions.matches;
-import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.*;
+import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.isDisplayed;
+import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withText;
 
 /**
- * Created by byronmackay on 4/25/14.
- */
+* Created by byronmackay on 4/25/14.
+*/
 public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActivity> {
 
     @SuppressWarnings("deprecation")
@@ -24,9 +26,9 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         super.setUp();
         getActivity();
 
-        DownloadHelper downloadHelper = getActivity().getDownloadHelper();
-        CountingIdlingResource countingIdlingResource = new CountingIdlingResource("DownloadHelperCalls");
-        getActivity().setDownloadHelper(new DecoratedDownloadHelper(downloadHelper, countingIdlingResource));
+        Runnable runnable = getActivity().getDownloadHelper().getWebCallRunnable();
+        CountingIdlingResource countingIdlingResource = new CountingIdlingResource("WebCallRunnableCall");
+        getActivity().getDownloadHelper().setWebCallRunnable(new DecoratedWebCallRunnable(runnable, countingIdlingResource));
         registerIdlingResources(countingIdlingResource);
     }
 
@@ -37,28 +39,50 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 
     public void testThreadRetrieval() throws Exception {
         onView(withText("Thread")).perform(click());
-        onView(withText("Thread Retrieved")).check(matches(isDisplayed()));
+        assertTrue(getActivity().isDidThreadReturn());
+//        onView(withText("Thread Retrieved")).check(matches(isDisplayed()));
     }
 
-    private class DecoratedDownloadHelper extends DownloadHelper {
+    private class DecoratedWebCallRunnable implements Runnable {
 
-        private final DownloadHelper realDownloadHelper;
+        private final Runnable realRunnable;
         private final CountingIdlingResource countingIdlingResource;
 
-        private DecoratedDownloadHelper(DownloadHelper realDownloadHelper, CountingIdlingResource countingIdlingResource) {
-            super(getActivity());
-            this.realDownloadHelper = realDownloadHelper;
+        private DecoratedWebCallRunnable(Runnable realRunnable, CountingIdlingResource countingIdlingResource) {
+            this.realRunnable = realRunnable;
             this.countingIdlingResource = countingIdlingResource;
         }
 
         @Override
-        public void getReps() {
+        public void run() {
             countingIdlingResource.increment();
             try {
-                realDownloadHelper.getReps();
+                realRunnable.run();
             } finally {
                 countingIdlingResource.decrement();
             }
         }
     }
+
+//    private class DecoratedDownloadHelper extends DownloadHelper {
+//
+//        private final DownloadHelper realDownloadHelper;
+//        private final CountingIdlingResource countingIdlingResource;
+//
+//        private DecoratedDownloadHelper(DownloadHelper realDownloadHelper, CountingIdlingResource countingIdlingResource) {
+//            super(getActivity());
+//            this.realDownloadHelper = realDownloadHelper;
+//            this.countingIdlingResource = countingIdlingResource;
+//        }
+//
+//        @Override
+//        public void getReps() {
+//            countingIdlingResource.increment();
+//            try {
+//                realDownloadHelper.getReps();
+//            } finally {
+//                countingIdlingResource.decrement();
+//            }
+//        }
+//    }
 }

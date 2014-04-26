@@ -2,8 +2,6 @@ package com.example.myapplication2.app;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,6 +17,7 @@ public class MainActivity extends Activity implements RepsCallbackInterface {
     @InjectView(R.id.textView2) TextView threadText;
     @InjectView(R.id.textView3) TextView asyncText;
     private DownloadHelper downloadHelper;
+    private boolean didThreadReturn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +44,7 @@ public class MainActivity extends Activity implements RepsCallbackInterface {
 
     @Override
     public void onRepsThreadReceived(final boolean didReceive) {
+        setDidThreadReturn(true);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -66,23 +66,11 @@ public class MainActivity extends Activity implements RepsCallbackInterface {
         this.downloadHelper = downloadHelper;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    public boolean isDidThreadReturn() {
+        return didThreadReturn;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    public void setDidThreadReturn(boolean didThreadReturn) {
+        this.didThreadReturn = didThreadReturn;
     }
 }

@@ -17,7 +17,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
-    // for gradle-1.9
+    
     packagingOptions {
         //for espresso
         exclude 'LICENSE.txt'
